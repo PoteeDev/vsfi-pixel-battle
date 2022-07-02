@@ -1,0 +1,252 @@
+<template>
+  <main class="pixel-battle">    
+    <div
+      class="current-color"
+      @click="toggleSelectionMenu"
+    >
+      <p>Current color:</p>
+      <div
+        class="current-color__marker"
+        :style="{backgroundColor: `rgb(${red}, ${green}, ${blue})`}"  
+      />
+    </div>
+
+    <div class="overlay"
+      v-if="selectionMode"
+    >
+      <div class="color-selection-wrapper">
+        <div class="color-selection-wrapper__result" :style="{backgroundColor: `rgb(${red}, ${green}, ${blue})`}" />
+
+        <label>
+          Red: {{ red }}
+          <input type="range" min="0" max="255" step="1" v-model="red">
+        </label>
+        
+        <label>
+          Green: {{ green }}
+          <input type="range" min="0" max="255" step="1" v-model="green">
+        </label>
+
+        <label>
+          Blue: {{ blue }}
+          <input type="range" min="0" max="255" step="1" v-model="blue">
+        </label>
+
+        <button
+          class="color-selection-wrapper__button"
+          @click="toggleSelectionMenu"  
+        >+</button>
+      </div>
+
+    </div>
+
+    <div class="picture">
+      <div
+        class="picture__row"
+        v-for="(row, rowIndex) of pixels"
+        :key="'row_' + rowIndex + 1"
+      >
+        <div
+          class="picture__pixel"
+          :style="{ backgroundColor: color }"
+          v-for="(color, columnIndex) of row"
+          :key="'column_' + columnIndex + 1"
+          @click="handlePixelClick(rowIndex, columnIndex)"
+        />
+      </div>
+    </div>
+  </main>
+</template>
+
+<script>
+import axios from 'axios';
+
+const SERVER_ADDRES = '192.168.0.157'
+const PORT = 5000
+
+
+const ADDRESS = `http://${SERVER_ADDRES}:${PORT}`
+const SOCKET = `ws://${SERVER_ADDRES}:${PORT}`
+
+export default {
+  name: 'App',
+  data () {
+    return {
+      selectionMode: false,
+      red: 106,
+      green: 144,
+      blue: 195,
+      selectedColor: '#000000',
+      pixels: []
+    }
+  },
+  methods: {
+    handleColorChange(event) {
+      console.log(event.target.value)
+    },
+    async handlePixelClick (indexI, indexJ) {
+      const r = Number(this.red).toString(16)
+      const g = Number(this.green).toString(16)
+      const b = Number(this.blue).toString(16)
+
+      const newColor = `#${r.length === 2 ? r : '0' + r}${g.length === 2 ? g : '0' + g}${b.length === 2 ? b : '0' + b}`
+      try {
+        const response = await axios.post(`${ADDRESS}/pixel`, {
+          cord: [indexI, indexJ],
+          color: newColor
+        })
+      } catch (error) {
+        
+      }
+    },
+    toggleSelectionMenu () {
+      this.selectionMode = !this.selectionMode
+    },
+    async initMatrix () {
+      
+      try {
+        const response = await axios.get(`${ADDRESS}/matrix`)
+        this.pixels = response.data.map((el) => { return el[0]})
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  },
+  mounted () {
+    this.initMatrix()
+
+    const socket = new WebSocket(`${SOCKET}/sock`);
+      socket.addEventListener('message', (event) => {
+        this.pixels = JSON.parse(event.data).map((el) => { return el[0]})
+      })
+  }
+}
+</script>
+
+<style lang="scss">
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgba(0,0,0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    margin-top: 12px;
+  }
+}
+
+.pixel-battle {
+  padding: 15px 50px;
+  overflow: scroll;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-selection-wrapper {
+  position: relative;
+  background-color: white;
+  border-radius: 8px;
+  padding: 50px;
+
+  &__result {
+    height: 50px;
+    width: 50px;
+    border-radius: 4px;
+    border: 1px solid black;
+  }
+
+  &__button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 36px;
+    transform: rotate(45deg);
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+
+    &:hover {
+      background-color: #696969;
+    }
+  }
+}
+
+.picture {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+
+    &__row {
+      display: flex;
+    }
+
+    &__pixel {
+      height: 20px;
+      width: 20px;
+      min-height: 10px;
+      min-width: 10px;
+      border: 0.1px solid black;
+      border-right: 0;
+      border-bottom: 0;
+    }
+
+    &__row &__pixel:last-child {
+      border-right: 0.1px solid black;
+    }
+
+    &__row:last-child {
+      border-bottom: 0.1px solid black;
+    }
+}
+
+@keyframes kekpek {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.current-color {
+  margin-bottom: 15px;
+  align-self: flex-start;
+  cursor: pointer;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+
+  &__marker {
+    margin-left: 4px;
+    height: 30px;
+    width: 30px;
+    border: 1px solid black;
+    border-radius: 4px;
+  }
+}
+</style>
