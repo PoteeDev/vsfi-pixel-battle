@@ -11,6 +11,21 @@
       />
     </div>
 
+    <div class="current-color">
+      <p>Pixel size:</p>
+      <label class="pixel-size">
+        <input type="range" min="4" step="1" max="50" v-model="pixelSize">
+        {{ pixelSize }}
+      </label>
+    </div>
+
+    <div class="current-color">
+      <label class="border-toggle">
+        Borders:
+        <input type="checkbox" v-model="borderVisible">
+      </label>
+    </div>
+
     <div class="overlay"
       v-if="selectionMode"
     >
@@ -48,7 +63,8 @@
       >
         <div
           class="picture__pixel"
-          :style="{ backgroundColor: color }"
+          :class="borderVisible ? 'picture__pixel--bordered' : null"
+          :style="{ backgroundColor: color, height: `${pixelSize}px`, width: `${pixelSize}px` }"
           v-for="(color, columnIndex) of row"
           :key="'column_' + columnIndex + 1"
           @click="handlePixelClick(rowIndex, columnIndex)"
@@ -72,6 +88,8 @@ export default {
   name: 'App',
   data () {
     return {
+      pixelSize: 4,
+      borderVisible: true,
       selectionMode: false,
       red: 106,
       green: 144,
@@ -130,17 +148,17 @@ export default {
 }
 
 body {
-  width: 100%;
-  min-height: 100vh;
+  padding: 0 15px 15px;
+  width: fit-content;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .overlay {
   position: absolute;
-  width: 100%;
-  height: 100vh;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgba(0,0,0, 0.8);
   display: flex;
   align-items: center;
@@ -155,8 +173,7 @@ body {
 }
 
 .pixel-battle {
-  padding: 15px 50px;
-  overflow: scroll;
+  margin-top: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -180,22 +197,22 @@ body {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
     font-size: 36px;
     transform: rotate(45deg);
     cursor: pointer;
     border: 0;
     background: transparent;
-
-    &:hover {
-      background-color: #696969;
-    }
   }
 }
 
+.pixel-size {
+  margin-left: 4px;
+}
+
 .picture {
+    border: 1px solid black;
     display: flex;
     flex-direction: column;
     width: fit-content;
@@ -205,21 +222,12 @@ body {
     }
 
     &__pixel {
-      height: 20px;
-      width: 20px;
       min-height: 10px;
       min-width: 10px;
+    }
+
+    &__pixel--bordered {
       border: 0.1px solid black;
-      border-right: 0;
-      border-bottom: 0;
-    }
-
-    &__row &__pixel:last-child {
-      border-right: 0.1px solid black;
-    }
-
-    &__row:last-child {
-      border-bottom: 0.1px solid black;
     }
 }
 
@@ -243,10 +251,21 @@ body {
 
   &__marker {
     margin-left: 4px;
-    height: 30px;
-    width: 30px;
+    height: 20px;
+    width: 20px;
     border: 1px solid black;
     border-radius: 4px;
+  }
+}
+
+.border-toggle {
+  display: flex;
+  align-items: center;
+
+  input {
+    margin-left: 4px;
+    height: 20px;
+    width: 20px;
   }
 }
 </style>
