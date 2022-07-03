@@ -1,9 +1,18 @@
-version: '3'
+version: "3.9"
 services:
-  redis:
-    image: redis:latest
+  api:
+    build:
+      context: .
     ports:
-      - 6379:6379
+      - '5000:5000'
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
     volumes:
-      - ./config/redis.conf:/redis.conf
-    command: [ "redis-server", "/redis.conf" ]
+      - cache:/data
+
+volumes:
+  cache:
+    driver: local
