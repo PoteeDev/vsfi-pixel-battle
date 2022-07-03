@@ -1,10 +1,11 @@
-from ipaddress import ip_address
 from flask import Flask, request, jsonify
 from flask_sock import Sock
 import json
 import os
+import re
 
 from flask_cors import CORS
+from sqlalchemy import true
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -28,8 +29,21 @@ class Storage:
     def get_data(self):
         return self.matrix
 
+    @staticmethod
+    def validate_pixel(data):
+        if data["cord"][1] < 0 or data["cord"][0] < 0:
+            return False
+
+        if data["cord"][0] < MX and data["cord"][1] < MY:
+            if re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", data["color"]):
+                return True
+
     def write_pixel(self, data):
-        self.matrix[data["cord"][0]][0][data["cord"][1]] = data["color"]
+        if self.validate_pixel(data):
+            self.matrix[data["cord"][0]][0][data["cord"][1]] = data["color"]
+            return "ok"
+        else:
+            return "validate error"
 
 
 storage = Storage()
@@ -45,7 +59,7 @@ def matrix_get():
 def matrix_edit():
     storage.new_data = 1
     status = storage.write_pixel(request.json)
-    return jsonify(status)
+    return jsonify({"status": status})
 
 
 @sock.route("/sock")
