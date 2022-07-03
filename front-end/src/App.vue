@@ -61,7 +61,7 @@
 <script>
 import axios from 'axios';
 
-const SERVER_ADDRES = '192.168.0.157'
+const SERVER_ADDRES = '127.0.0.1'
 const PORT = 5000
 
 

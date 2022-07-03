@@ -3,9 +3,7 @@ from flask_sock import Sock
 import json
 import os
 import re
-
 from flask_cors import CORS
-from sqlalchemy import true
 
 app = Flask(__name__)
 sock = Sock(app)
