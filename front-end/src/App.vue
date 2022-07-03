@@ -1,80 +1,86 @@
 <template>
-  <main class="pixel-battle">    
-    <div
-      class="current-color"
-      @click="toggleSelectionMenu"
-    >
-      <p>Current color:</p>
-      <div
-        class="current-color__marker"
-        :style="{backgroundColor: `rgb(${red}, ${green}, ${blue})`}"  
-      />
-    </div>
+  <main class="pixel-battle">
+    <template v-if="!isLoading">
+      <h1>Pixel Battle</h1>
 
-    <div class="current-color">
-      <p>Pixel size:</p>
-      <label class="pixel-size">
-        <input type="range" min="4" step="1" max="50" v-model="pixelSize">
-        {{ pixelSize }}
-      </label>
-    </div>
-
-    <div class="current-color">
-      <label class="border-toggle">
-        Borders:
-        <input type="checkbox" v-model="borderVisible">
-      </label>
-    </div>
-
-    <div class="overlay"
-      v-if="selectionMode"
-    >
-      <div class="color-selection-wrapper">
-        <div class="color-selection-wrapper__result" :style="{backgroundColor: `rgb(${red}, ${green}, ${blue})`}" />
-
-        <label>
-          Red: {{ red }}
-          <input type="range" min="0" max="255" step="1" v-model="red">
-        </label>
-        
-        <label>
-          Green: {{ green }}
-          <input type="range" min="0" max="255" step="1" v-model="green">
-        </label>
-
-        <label>
-          Blue: {{ blue }}
-          <input type="range" min="0" max="255" step="1" v-model="blue">
-        </label>
-
-        <button
-          class="color-selection-wrapper__button"
-          @click="toggleSelectionMenu"  
-        >+</button>
-      </div>
-
-    </div>
-
-    <div class="picture">
-      <div
-        class="picture__row"
-        v-for="(row, rowIndex) of pixels"
-        :key="'row_' + rowIndex + 1"
-      >
+      <div class="controlls">
         <div
-          class="picture__pixel"
-          :style="{
-              backgroundColor: color,
-              height: `${pixelSize}px`,
-              width: `${pixelSize}px`,
-              borderColor: borderVisible ? 'black' : color
-            }"
-          v-for="(color, columnIndex) of row"
-          :key="'column_' + columnIndex + 1"
-          @click="handlePixelClick(rowIndex, columnIndex)"
-        />
+          class="current-color"
+          @click="toggleSelectionMenu"
+        >
+          <p>Current color:</p>
+          <div
+            class="current-color__marker"
+            :style="{backgroundColor: `rgb(${red}, ${green}, ${blue})`}"  
+          />
+        </div>
+
+        <div class="current-color">
+          <p>Pixel size:</p>
+          <label class="pixel-size">
+            <input type="range" min="4" step="1" max="50" v-model="pixelSize">
+            {{ pixelSize }}
+          </label>
+        </div>
+
+        <div class="current-color">
+          <label class="border-toggle">
+            Borders:
+            <input type="checkbox" v-model="borderVisible">
+          </label>
+        </div>
       </div>
-    </div>
+
+      <div class="overlay"
+        v-if="selectionMode"
+      >
+        <div class="color-selection-wrapper">
+          <div class="color-selection-wrapper__result" :style="{backgroundColor: `rgb(${red}, ${green}, ${blue})`}" />
+
+          <label>
+            Red: {{ red }}
+            <input type="range" min="0" max="255" step="1" v-model="red">
+          </label>
+          
+          <label>
+            Green: {{ green }}
+            <input type="range" min="0" max="255" step="1" v-model="green">
+          </label>
+
+          <label>
+            Blue: {{ blue }}
+            <input type="range" min="0" max="255" step="1" v-model="blue">
+          </label>
+
+          <button
+            class="color-selection-wrapper__button"
+            @click="toggleSelectionMenu"  
+          >+</button>
+        </div>
+
+      </div>
+
+      <div class="picture">
+        <div
+          class="picture__row"
+          v-for="(row, rowIndex) of pixels"
+          :key="'row_' + rowIndex + 1"
+        >
+          <div
+            class="picture__pixel"
+            :style="{
+                backgroundColor: color,
+                height: `${pixelSize}px`,
+                width: `${pixelSize}px`,
+                borderColor: borderVisible ? 'black' : color
+              }"
+            v-for="(color, columnIndex) of row"
+            :key="'column_' + columnIndex + 1"
+            @click="handlePixelClick(rowIndex, columnIndex)"
+          />
+        </div>
+      </div>
+    </template>
   </main>
 </template>
 
@@ -99,7 +105,9 @@ export default {
       green: 144,
       blue: 195,
       selectedColor: '#000000',
-      pixels: []
+      pixels: [],
+      canIClick: true,
+      isLoading: true,
     }
   },
   methods: {
@@ -107,6 +115,8 @@ export default {
       console.log(event.target.value)
     },
     async handlePixelClick (indexI, indexJ) {
+      if (!this.canIClick) return
+      
       const r = Number(this.red).toString(16)
       const g = Number(this.green).toString(16)
       const b = Number(this.blue).toString(16)
@@ -117,8 +127,15 @@ export default {
           cord: [indexI, indexJ],
           color: newColor
         })
+
+
+        this.canIClick = false
+
+        setTimeout(() => {
+          this.canIClick = true
+        }, 20000)
       } catch (error) {
-        
+
       }
     },
     toggleSelectionMenu () {
@@ -129,6 +146,7 @@ export default {
       try {
         const response = await axios.get(`${ADDRESS}/matrix`)
         this.pixels = response.data.map((el) => { return el[0]})
+        this.isLoading = false
       } catch (error) {
         console.error(error)
       }
@@ -152,6 +170,7 @@ export default {
 }
 
 body {
+  min-height: 100vh;
   padding: 0 15px 15px;
   width: fit-content;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -166,7 +185,7 @@ body {
   background-color: rgba(0,0,0, 0.8);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
   z-index: 10;
 
   label {
@@ -180,8 +199,12 @@ body {
   margin-top: 15px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  h1 {
+    margin: 16px 0;
+  }
 }
 
 .color-selection-wrapper {
@@ -216,20 +239,26 @@ body {
 }
 
 .picture {
-    border: 1px solid black;
+  border: 0.5px solid black;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+
+  &__row {
     display: flex;
-    flex-direction: column;
-    width: fit-content;
+  }
 
-    &__row {
-      display: flex;
-    }
+  &__pixel {
+    min-height: 10px;
+    min-width: 10px;
+    border: 1px solid black;
 
-    &__pixel {
-      min-height: 10px;
-      min-width: 10px;
-      border: 1px solid black;
+    &:hover {
+      position: relative;
+      transform: scale(1.5);
+      border-color: black !important;
     }
+  }
 }
 
 @keyframes kekpek {
@@ -257,6 +286,11 @@ body {
     border: 1px solid black;
     border-radius: 4px;
   }
+}
+
+.loader {
+  justify-self: center;
+  align-self: center;
 }
 
 .border-toggle {
