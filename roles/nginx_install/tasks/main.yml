@@ -1,0 +1,11 @@
+- name: Install Nginx Web Server 
+  apt:
+    name=nginx
+    state=latest
+  become: yes
+  notify:
+    - nginx systemd
+
+- name: Copy Nginx config file and restart Nginx
+  copy:
+    src: 
