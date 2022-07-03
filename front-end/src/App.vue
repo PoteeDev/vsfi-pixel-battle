@@ -63,8 +63,12 @@
       >
         <div
           class="picture__pixel"
-          :class="borderVisible ? 'picture__pixel--bordered' : null"
-          :style="{ backgroundColor: color, height: `${pixelSize}px`, width: `${pixelSize}px` }"
+          :style="{
+              backgroundColor: color,
+              height: `${pixelSize}px`,
+              width: `${pixelSize}px`,
+              borderColor: borderVisible ? 'black' : color
+            }"
           v-for="(color, columnIndex) of row"
           :key="'column_' + columnIndex + 1"
           @click="handlePixelClick(rowIndex, columnIndex)"
@@ -224,10 +228,7 @@ body {
     &__pixel {
       min-height: 10px;
       min-width: 10px;
-    }
-
-    &__pixel--bordered {
-      border: 0.1px solid black;
+      border: 1px solid black;
     }
 }
 
