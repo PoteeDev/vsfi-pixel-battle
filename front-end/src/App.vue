@@ -87,9 +87,8 @@
 <script>
 import axios from 'axios';
 
-const SERVER_ADDRES = '192.168.0.157'
-const PORT = 5000
-
+const SERVER_ADDRES = process.env.API_ADDRESS || '192.168.0.157'
+const PORT = process.env.API_PORT || 5000
 
 const ADDRESS = `http://${SERVER_ADDRES}:${PORT}`
 const SOCKET = `ws://${SERVER_ADDRES}:${PORT}`
@@ -185,7 +184,7 @@ body {
   background-color: rgba(0,0,0, 0.8);
   display: flex;
   align-items: center;
-  justify-content: left;
+  justify-content: center;
   z-index: 10;
 
   label {
