@@ -1,20 +1,18 @@
-from flask import Flask, request, jsonify
-from flask_sock import Sock
 import json
 import os
 import re
 import redis
+from flask import Flask, request, jsonify
+from flask_sock import Sock
 from flask_cors import CORS
-from sqlalchemy import true
-from datetime import datetime
 
 app = Flask(__name__)
 sock = Sock(app)
 CORS(app)
 
-MX = os.getenv("MAX_X", 100)
-MY = os.getenv("MAX_Y", 100)
-client = redis.Redis(host="localhost", port=6379)
+
+MX = int(os.getenv("MAX_X", 100))
+MY = int(os.getenv("MAX_Y", 70))
 
 
 class Storage:
@@ -22,30 +20,30 @@ class Storage:
         pass
 
     def __init__(self) -> None:
+        self.client = redis.Redis(
+            host=os.getenv("REDIS_HOST", "redis"),
+            port=int(os.getenv("REDIS_PORT", 6379)),
+        )
         self.new_data = 0
         self.create_matrix()
 
-    def create_matrix(self):
+    def create_matrix(self) -> None:
         matrix: list = []
         for x in range(MX):
             for y in range(MY):
-                # self.matrix.append([["#ABABAB"] * MY])
-                client.set(str(x) + "-" + str(y), "#ABABAB")
+                self.client.set(str(x) + "-" + str(y), "#ABABAB")
         for x in range(MX):
             matrix.append([])
             for y in range(MY):
-                matrix[x].append(client.get(str(x) + "-" + str(y)).decode("ascii"))
+                matrix[x].append(self.client.get(str(x) + "-" + str(y)).decode("ascii"))
 
-    def get_data(self):
+    def get_data(self) -> list:
         flat_matrix: list = []
         matrix: list = []
-
-        start = datetime.now()
         for x in range(MX):
             for y in range(MY):
                 flat_matrix.append(str(x) + "-" + str(y))
-        redis_data = client.mget(flat_matrix)
-        print(datetime.now() - start)
+        redis_data = self.client.mget(flat_matrix)
         for x in range(MX):
             matrix.append([])
             for y in range(MY):
@@ -64,7 +62,9 @@ class Storage:
 
     def write_pixel(self, data):
         if self.validate_pixel(data):
-            client.set(str(data["cord"][0]) + "-" + str(data["cord"][1]), data["color"])
+            self.client.set(
+                str(data["cord"][0]) + "-" + str(data["cord"][1]), data["color"]
+            )
             return "ok"
         else:
             return "validate error"
@@ -96,4 +96,4 @@ def echo(sock):
 
 
 if __name__ == "__main__":
-    app.run("0.0.0.0")
+    app.run(host="0.0.0.0")

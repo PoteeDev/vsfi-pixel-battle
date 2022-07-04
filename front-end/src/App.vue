@@ -87,7 +87,7 @@
 <script>
 import axios from 'axios';
 
-const SERVER_ADDRES = process.env.API_ADDRESS || '192.168.0.157'
+const SERVER_ADDRES = process.env.API_ADDRESS || '127.0.0.1'
 const PORT = process.env.API_PORT || 5000
 
 const ADDRESS = `http://${SERVER_ADDRES}:${PORT}`
