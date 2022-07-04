@@ -1,13 +1,15 @@
-FROM node:lts-alpine as build-stage
+FROM node:12.18.2 as build
+
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
+COPY ./package.json /app/package.json
+COPY ./package-lock.json /app/package-lock.json
+
+RUN yarn install
 COPY . .
-RUN npm run build
+RUN yarn build
 
-
-FROM nginx:stable-alpine as production-stage
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+FROM nginx
+COPY ./nginx/nginx.conf /etc/nginx/nginx/conf
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build-stage /app/dist /usr/share/nginx/html
-EXPOSE 80
+COPY --from=build /app/build /usr/share/nginx/html
