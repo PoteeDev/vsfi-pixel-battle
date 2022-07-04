@@ -124,16 +124,17 @@ export default {
     
       try {
         const response = await axios.post(`${ADDRESS}/pixel`, {
-          cord: [indexI, indexJ],
+          x: indexI,
+          y: indexJ,
           color: newColor
         })
 
 
-        this.canIClick = false
+        // this.canIClick = false
 
-        setTimeout(() => {
-          this.canIClick = true
-        }, 20000)
+        // setTimeout(() => {
+        //   this.canIClick = true
+        // }, 20000)
       } catch (error) {
 
       }

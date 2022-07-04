@@ -5,7 +5,7 @@ import json
 from threading import Thread
 import time
 
-COUNT_TREADS = 100
+COUNT_TREADS = 1
 
 
 def treading_function(data):
@@ -17,7 +17,8 @@ def treading_function(data):
             r = requests.post(
                 "http://localhost:5000/pixel",
                 json={
-                    "cord": [x, y],
+                    "x": x,
+                    "y": y,
                     "color": "#%02X%02X%02X" % (color(), color(), color()),
                 },
             )
