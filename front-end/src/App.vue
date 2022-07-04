@@ -121,6 +121,7 @@ export default {
       const b = Number(this.blue).toString(16)
 
       const newColor = `#${r.length === 2 ? r : '0' + r}${g.length === 2 ? g : '0' + g}${b.length === 2 ? b : '0' + b}`
+    
       try {
         const response = await axios.post(`${ADDRESS}/pixel`, {
           cord: [indexI, indexJ],
@@ -144,7 +145,7 @@ export default {
       
       try {
         const response = await axios.get(`${ADDRESS}/matrix`)
-        this.pixels = response.data.map((el) => { return el[0]})
+        this.pixels = response.data
         this.isLoading = false
       } catch (error) {
         console.error(error)
@@ -156,7 +157,7 @@ export default {
 
     const socket = new WebSocket(`${SOCKET}/sock`);
       socket.addEventListener('message', (event) => {
-        this.pixels = JSON.parse(event.data).map((el) => { return el[0]})
+        this.pixels = JSON.parse(event.data)
       })
   }
 }
