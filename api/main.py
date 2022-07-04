@@ -16,9 +16,6 @@ MY = int(os.getenv("MAX_Y", 70))
 
 
 class Storage:
-    def get_matrix(self):
-        pass
-
     def __init__(self) -> None:
         self.client = redis.Redis(
             host=os.getenv("REDIS_HOST", "redis"),
