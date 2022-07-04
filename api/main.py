@@ -24,26 +24,30 @@ class Storage:
             host=os.getenv("REDIS_HOST", "redis"),
             port=int(os.getenv("REDIS_PORT", 6379)),
         )
-        self.new_data = 0
+        self.client.set("new", 0)
+        self.flat_matrix = []
         self.create_matrix()
 
+    def _set_click(self, value: int):
+        self.client.set("new", value)
+
+    def _get_click_status(self):
+        return int(self.client.get("new").decode())
+
     def create_matrix(self) -> None:
-        matrix: list = []
+        # matrix: list = []
         for x in range(MX):
             for y in range(MY):
-                self.client.set(str(x) + "-" + str(y), "#ABABAB")
-        for x in range(MX):
-            matrix.append([])
-            for y in range(MY):
-                matrix[x].append(self.client.get(str(x) + "-" + str(y)).decode("ascii"))
+                self.flat_matrix.append(f"{x}-{y}")
+                self.client.set(f"{x}-{y}", "#ABABAB")
+        # for x in range(MX):
+        #     matrix.append([])
+        #     for y in range(MY):
+        #         matrix[x].append(self.client.get(f"{x}-{y}").decode("ascii"))
 
     def get_data(self) -> list:
-        flat_matrix: list = []
         matrix: list = []
-        for x in range(MX):
-            for y in range(MY):
-                flat_matrix.append(str(x) + "-" + str(y))
-        redis_data = self.client.mget(flat_matrix)
+        redis_data = self.client.mget(self.flat_matrix)
         for x in range(MX):
             matrix.append([])
             for y in range(MY):
@@ -62,9 +66,7 @@ class Storage:
 
     def write_pixel(self, data):
         if self.validate_pixel(data):
-            self.client.set(
-                str(data["cord"][0]) + "-" + str(data["cord"][1]), data["color"]
-            )
+            self.client.set(f"{data['cord'][0]}-{data['cord'][1]}", data["color"])
             return "ok"
         else:
             return "validate error"
@@ -81,7 +83,7 @@ def matrix_get():
 
 @app.route("/pixel", methods=["POST"])
 def matrix_edit():
-    storage.new_data = 1
+    storage._set_click(1)
     status = storage.write_pixel(request.json)
     return jsonify({"status": status})
 
@@ -89,10 +91,10 @@ def matrix_edit():
 @sock.route("/sock")
 def echo(sock):
     while True:
-        if storage.new_data == 1:
+        if storage._get_click_status():
             matrix = storage.get_data()
             sock.send(json.dumps(matrix))
-            storage.new_data = 0
+            storage._set_click(0)
 
 
 if __name__ == "__main__":
