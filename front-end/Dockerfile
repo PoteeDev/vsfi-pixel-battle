@@ -1,15 +1,22 @@
-FROM node:12.18.2 as build
+FROM node:10-alpine as builder
 
 WORKDIR /app
 
-COPY ./package.json /app/package.json
-COPY ./package-lock.json /app/package-lock.json
+COPY package*.json ./
 
-RUN yarn install
+RUN npm install
+
 COPY . .
-RUN yarn build
+RUN npm run build
 
-FROM nginx
-COPY ./nginx/nginx.conf /etc/nginx/nginx/conf
+FROM nginx:alpine as production-build
+
+COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
+
+RUN rm -rf /usr/share/nginx/html*
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
