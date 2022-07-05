@@ -5,7 +5,7 @@ import json
 from threading import Thread
 import time
 
-COUNT_TREADS = 1
+COUNT_TREADS = 100
 
 
 def treading_function(data):

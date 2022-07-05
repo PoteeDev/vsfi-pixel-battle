@@ -54,16 +54,16 @@ class Storage:
 
     @staticmethod
     def validate_pixel(data):
-        if data["cord"][1] < 0 or data["cord"][0] < 0:
+        if data["x"] < 0 or data["y"] < 0:
             return False
 
-        if data["cord"][0] < MX and data["cord"][1] < MY:
+        if data["x"] < MX and data["y"] < MY:
             if re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", data["color"]):
                 return True
 
     def write_pixel(self, data):
         if self.validate_pixel(data):
-            self.client.set(f"{data['cord'][0]}-{data['cord'][1]}", data["color"])
+            self.client.set(f"{data['x']}-{data['y']}", data["color"])
             return "ok"
         else:
             return "validate error"

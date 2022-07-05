@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/rs/cors"
 )
 
 var upgrader = websocket.Upgrader{
@@ -45,25 +48,51 @@ type Pixel struct {
 	Color string `json:"color"`
 }
 
+func Getenv(envName string, defaultValue int) int {
+	param := os.Getenv(envName)
+	if param == "" {
+		return defaultValue
+	} else {
+		intParam, err := strconv.Atoi(param)
+		if err != nil {
+			panic(err)
+		}
+		return intParam
+	}
+}
 func main() {
-	matrix := Matrix{x: 100, y: 80}
+	matrix := Matrix{x: Getenv("MAX_X", 100), y: Getenv("MAX_Y", 80)}
 	matrix.GenerateMatrix()
-	matrix.GetMatrix()
-	r := gin.Default()
-	r.Use(cors.Default())
-	r.GET("/matrix", func(c *gin.Context) {
-		c.JSON(http.StatusOK, matrix.GetMatrix())
-	})
-	r.POST("/pixel", func(c *gin.Context) {
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/matrix", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(matrix.GetMatrix())
+	}).Methods("GET")
+
+	r.HandleFunc("/pixel", func(w http.ResponseWriter, r *http.Request) {
 		var pixel Pixel
-		c.BindJSON(&pixel)
+		json.NewDecoder(r.Body).Decode(&pixel)
 		SetClickAction(1)
-		c.JSON(http.StatusOK, gin.H{"status": SetPixel(pixel.X, pixel.Y, pixel.Color)})
-	})
-	r.GET("/sock", func(c *gin.Context) {
-		handler(c.Writer, c.Request, matrix)
-	})
+		json.NewEncoder(w).Encode(map[string]string{"status": SetPixel(pixel.X, pixel.Y, pixel.Color)})
+	}).Methods("OPTIONS", "POST")
 
-	r.Run("localhost:5000")
+	r.HandleFunc("/sock", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, matrix)
+	})
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},                      // All origins
+		AllowedMethods: []string{"POST", "GET", "OPTIONS"}, // Allowing only get, just an example
+	})
+	// cors := handlers.AllowedOrigins([]string{"*"})
+	// methods := handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS"})
+	srv := &http.Server{
+		Handler: c.Handler(r),
+		Addr:    "0.0.0.0:5000",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
 
+	log.Fatal(srv.ListenAndServe())
 }

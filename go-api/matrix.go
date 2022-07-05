@@ -25,7 +25,7 @@ func (m *Matrix) GenerateMatrix() {
 		}
 	}
 }
-func (m *Matrix) GetMatrix() interface{} {
+func (m *Matrix) GetMatrix() [][]string {
 	result, err := rdb.MGet(ctx, matrixKeys...).Result()
 	if err != nil {
 		fmt.Println(err)
