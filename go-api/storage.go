@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -21,7 +20,6 @@ func SetClickAction(value int) error {
 func GetClickAction() string {
 	result, err := rdb.Get(ctx, "click").Result()
 	if err != nil {
-		fmt.Println(err)
 		return "0"
 	}
 	return result

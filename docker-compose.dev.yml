@@ -3,6 +3,7 @@ services:
   web:
     build:
       context: front-end
+      dockerfile: Dockerfile
     container_name: web
     ports:
       - 80:80
@@ -14,6 +15,7 @@ services:
     environment:
       - MAX_X=100
       - MAX_Y=100
+      - INTERVAL=1
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     ports:

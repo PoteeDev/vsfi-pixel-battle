@@ -27,18 +27,16 @@ func handler(w http.ResponseWriter, r *http.Request, matrix Matrix) {
 		return
 	}
 	defer conn.Close()
-	for {
-		if GetClickAction() == "1" {
-			msg, err := json.Marshal(matrix.GetMatrix())
-			if err != nil {
-				fmt.Printf("Error: %s", err.Error())
-			}
-			err = conn.WriteMessage(websocket.TextMessage, msg)
-			if err != nil {
-				log.Println(err)
-			}
-			SetClickAction(0)
+	for range time.Tick(time.Second * time.Duration(Getenv("INTERVAL", 1))) {
+		msg, err := json.Marshal(matrix.GetMatrix())
+		if err != nil {
+			fmt.Printf("Error: %s", err.Error())
 		}
+		err = conn.WriteMessage(websocket.TextMessage, msg)
+		if err != nil {
+			log.Println(err)
+		}
+		SetClickAction(0)
 	}
 }
 
