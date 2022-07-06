@@ -30,10 +30,10 @@ import { Compact } from '@ckpack/vue-color';
 
 
 const SERVER_ADDRES = process.env.API_ADDRESS || '127.0.0.1'
-const PORT = process.env.API_PORT || 5000
+const PORT = process.env.API_PORT || 80
 
-const ADDRESS = `http://${SERVER_ADDRES}:${PORT}`
-const SOCKET = `ws://${SERVER_ADDRES}:${PORT}`
+const ADDRESS = `http://${SERVER_ADDRES}:${PORT}/api/v1`
+const SOCKET = `ws://${SERVER_ADDRES}:${PORT}/api/v1`
 
 export default {
   name: 'App',
