@@ -20,6 +20,9 @@ services:
       - INTERVAL=1
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    ports: 
+     - "5000-5004:5000"
+    scale: 5
 
   redis:
     image: redis:6.2-alpine
