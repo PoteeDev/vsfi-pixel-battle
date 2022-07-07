@@ -15,7 +15,7 @@ def treading_function(data):
         for y in range(100):
             color = lambda: random.randint(0, 255)
             r = requests.post(
-                "http://localhost:5000/pixel",
+                "http://localhost/api/v1/pixel",
                 json={
                     "x": x,
                     "y": y,

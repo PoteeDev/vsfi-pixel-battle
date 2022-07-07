@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   web:
+    image: explabs/vsfi-pixel-battle-web
     build:
       context: front-end
       dockerfile: Dockerfile
@@ -12,14 +13,13 @@ services:
     build:
       context: go-api
     container_name: api
+    image: explabs/vsfi-pixel-battle-api
     environment:
       - MAX_X=100
       - MAX_Y=100
       - INTERVAL=1
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    ports:
-      - 5000:5000
 
   redis:
     image: redis:6.2-alpine
