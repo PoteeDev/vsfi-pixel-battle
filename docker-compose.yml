@@ -8,6 +8,9 @@ services:
   api:
     image: explabs/vsfi-pixel-battle-api
     container_name: api
+    ports: 
+     - "5000-5004:5000"
+    scale: 5
 
   redis:
     image: redis:6.2-alpine
