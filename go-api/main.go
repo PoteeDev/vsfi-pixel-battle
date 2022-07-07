@@ -11,7 +11,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/rs/cors"
 )
 
 var upgrader = websocket.Upgrader{
@@ -78,14 +77,8 @@ func main() {
 	r.HandleFunc("/sock", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, matrix)
 	})
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},                      // All origins
-		AllowedMethods: []string{"POST", "GET", "OPTIONS"}, // Allowing only get, just an example
-	})
-	// cors := handlers.AllowedOrigins([]string{"*"})
-	// methods := handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS"})
 	srv := &http.Server{
-		Handler: c.Handler(r),
+		Handler: r,
 		Addr:    "0.0.0.0:5000",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,

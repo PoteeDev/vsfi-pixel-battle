@@ -7,7 +7,7 @@
       <Compact v-model="colors" />
     </div>
     <div class="d-flex justify-center">
-      <canvas id="canvas" width="1500" height="1500"></canvas>
+      <canvas id="canvas" width="1500" height="1200"></canvas>
     </div>
     <v-dialog v-model="dialog">
       <v-card color="#5485ae" theme="dark" class="tonal pa-md-6 mx-lg-auto">
@@ -29,11 +29,12 @@ import axios from 'axios';
 import { Compact } from '@ckpack/vue-color';
 
 
-const SERVER_ADDRES = process.env.API_ADDRESS || '127.0.0.1'
+const SERVER_ADDRES = document.location.host;
+//const SERVER_ADDRES = "localhost";
 const PORT = process.env.API_PORT || 80
 
-const ADDRESS = `http://${SERVER_ADDRES}:${PORT}/api/v1`
-const SOCKET = `ws://${SERVER_ADDRES}:${PORT}/api/v1`
+const ADDRESS = `http://${SERVER_ADDRES}/api/v1`
+const SOCKET = `ws://${SERVER_ADDRES}/api/v1`
 
 export default {
   name: 'App',
@@ -148,11 +149,12 @@ export default {
           y = event.pageY - elemTop;
         var pixel_x = Math.floor(x / vm.pixelSize),
           pixel_y = Math.floor(y / vm.pixelSize)
-        vm.elements[pixel_x + pixel_y * vm.pixels.length].color = vm.colors.hex
         if (vm.block == false) {
-          vm.render_matrix()
+          vm.pixels[pixel_y][pixel_x] = vm.colors.hex
+          vm.draw()
           vm.sendPixel(pixel_y, pixel_x)
           vm.blockMatrix()
+          vm.block == true
         } else {
           vm.showDialog()
         }
